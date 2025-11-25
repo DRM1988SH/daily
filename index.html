@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>برنامج التقارير اليومية للمسلخ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- إضافة مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
         
@@ -12,7 +16,7 @@
             --header-footer-color: #A0522D;
             --header-height: 60px;
             --footer-height: 20px;
-            --sidebar-width: 250px;
+            --sidebar-width: 220px;
         }
 
         body {
@@ -138,13 +142,13 @@
         }
         
         .table-cell-header {
-            min-width: 50px;
+            min-width: 80px;
             white-space: normal !important;
             word-wrap: break-word;
-            padding: 8px 4px;
+            padding: 8px 6px;
             font-weight: 600;
-            font-size: 0.75rem;
-            line-height: 1.2;
+            font-size: 0.8rem;
+            line-height: 1.3;
         }
 
         .cleaning-score-select-table {
@@ -171,7 +175,7 @@
             #print-container { 
                 display: block !important;
                 direction: rtl;
-                padding: 0;
+                padding: 20px;
                 margin: 0;
                 font-family: 'Cairo', sans-serif !important;
                 width: 100% !important;
@@ -179,7 +183,7 @@
             
             @page {
                 size: landscape;
-                margin: 0.5cm;
+                margin: 0.5cm 0cm 1cm 0cm;
             }
             
             #print-container .app-button,
@@ -209,13 +213,13 @@
             #print-container table { 
                 width: 100%; 
                 border-collapse: collapse; 
-                margin: 10px 0;
-                font-size: 12px;
+                margin: 15px 0;
+                font-size: 14px;
             }
             
             #print-container th, #print-container td { 
                 border: 1px solid #000 !important; 
-                padding: 4px 6px;
+                padding: 8px 5px;
                 text-align: center;
                 vertical-align: middle;
             }
@@ -237,35 +241,41 @@
             
             .print-header {
                 text-align: center;
-                margin-bottom: 15px;
-                padding-bottom: 10px;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
                 border-bottom: 2px solid #333;
             }
             
             .print-header h1 {
-                font-size: 22px;
+                font-size: 28px;
                 font-weight: bold;
                 margin: 0;
                 color: #333;
             }
             
-            .print-header p {
-                font-size: 14px;
-                margin: 5px 0;
+            .print-header h2 {
+                font-size: 22px;
+                margin: 10px 0;
                 color: #555;
             }
             
+            .print-header h3 {
+                font-size: 18px;
+                margin: 5px 0;
+                color: #777;
+            }
+            
             .print-stats {
-                margin: 15px 0;
-                padding: 10px;
+                margin: 20px 0;
+                padding: 15px;
                 background-color: #f9f9f9;
                 border: 1px solid #ddd;
-                border-radius: 5px;
+                border-radius: 8px;
             }
             
             .print-stats h3 {
-                font-size: 16px;
-                margin: 0 0 10px 0;
+                font-size: 18px;
+                margin: 0 0 15px 0;
                 text-align: center;
                 font-weight: bold;
             }
@@ -280,6 +290,177 @@
             #print-container * {
                 box-shadow: none !important;
                 text-shadow: none !important;
+            }
+
+            .print-section {
+                margin: 25px 0;
+                page-break-inside: avoid;
+            }
+
+            .print-divider {
+                border-top: 2px solid #333;
+                margin: 20px 0;
+                padding-top: 15px;
+            }
+
+            /* تنسيقات خاصة للعناوين في التقارير */
+            .cleaning-report-title {
+                text-align: center;
+                margin-bottom: 15px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            
+            .cleaning-report-abattoir {
+                text-align: right;
+                float: right;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .cleaning-report-date {
+                text-align: left;
+                float: left;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .temperature-report-title {
+                text-align: center;
+                margin-bottom: 15px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            
+            .temperature-report-abattoir {
+                text-align: right;
+                float: right;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .temperature-report-date {
+                text-align: left;
+                float: left;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .lab-report-title {
+                text-align: center;
+                margin-bottom: 15px;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            
+            .lab-report-abattoir {
+                text-align: left;
+                float: left;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .lab-report-date {
+                text-align: right;
+                float: right;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .rotate-header {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                transform: rotate(180deg);
+                white-space: nowrap;
+                padding: 10px 5px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            
+            .cleaning-legend-print {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 15px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 5px;
+                font-size: 13px;
+                page-break-inside: avoid;
+            }
+            
+            .legend-item-print {
+                display: flex;
+                align-items: center;
+                margin: 0 5px;
+            }
+            
+            .legend-color-print {
+                width: 20px;
+                height: 20px;
+                margin-left: 5px;
+                border-radius: 3px;
+            }
+            
+            /* تنسيقات خاصة للإحصائيات في تقرير المخبرية */
+            .lab-stats-compact {
+                margin-top: 10px;
+                padding: 8px;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                font-size: 13px;
+                line-height: 1.2;
+            }
+            
+            .lab-stats-compact h4 {
+                font-size: 14px;
+                font-weight: bold;
+                margin: 0 0 5px 0;
+                text-align: center;
+            }
+            
+            .lab-stats-compact .stats-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 2px;
+            }
+            
+            .lab-stats-compact .stats-section {
+                margin-bottom: 5px;
+            }
+            
+            /* تنسيقات الجداول المتجاورة */
+            .stats-tables-container {
+                display: flex;
+                justify-content: space-between;
+                gap: 5px;
+                margin-top: 10px;
+            }
+            
+            .stats-table {
+                flex: 1;
+                border-collapse: collapse;
+                font-size: 12px;
+            }
+            
+            .stats-table th, .stats-table td {
+                border: 1px solid #000;
+                padding: 4px 3px;
+                text-align: center;
+            }
+            
+            .stats-table th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+            }
+            
+            .stats-table-title {
+                text-align: center;
+                font-weight: bold;
+                margin-bottom: 5px;
+                font-size: 13px;
             }
         }
 
@@ -378,8 +559,9 @@
 
         .temperature-period-header {
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             white-space: nowrap;
+            padding: 8px 4px;
         }
         
         .temperature-point-header {
@@ -387,7 +569,15 @@
             font-size: 0.7rem;
             white-space: normal;
             line-height: 1.1;
-            padding: 2px 4px;
+            padding: 6px 3px;
+            min-width: 60px;
+        }
+
+        .maintenance-point-header {
+            min-width: 120px;
+            white-space: normal;
+            line-height: 1.2;
+            padding: 8px 6px;
         }
 
         @media (max-width: 768px) {
@@ -486,13 +676,28 @@
         </div>
 
         <footer id="app-footer">
-            <p>&copy; 2025 نظام التقارير اليومية للمسالخ. جميع الحقوق محفوظة.</p>
+            <p>&copy;  2025 نظام التقارير اليومية للمسالخ. جميع الحقوق محفوظة.</p>
         </footer>
 
     </div>
 
     <script>
-        const STATE_KEY = 'slaughterhouse_app_state_v15';
+        // 🔥 تكوين Firebase - استخدم البيانات من مشروعك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVK8Qrzl98ruBF8Fjh7WLpSFLi8_x464c",
+            authDomain: "report-cf865.firebaseapp.com",
+            projectId: "report-cf865",
+            storageBucket: "report-cf865.firebasestorage.app",
+            messagingSenderId: "195144802320",
+            appId: "1:195144802320:web:ea87e2c00afbc2230aea95"
+        };
+
+        // تهيئة Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        const STATE_KEY = 'slaughterhouse_app_state_final';
         const DEFAULT_BASE64_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgNDAwIDIwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNDMDc5MzQiLz48dGV4dCB4PSIyMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9ImNhaXJvLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjZmZmZmZmIj5QYWxhY2UgZm9yIFNwbGFzaCBJbWFnZTwvdGV4dD48L3N2Zz4=';
         const DEFAULT_BASE64_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIj48Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIyNSIgZmlsbD0iI0EwNTIyRCIvPjx0ZXh0IHg9IjI1IiB5PSIyNSIgZm9udC1mYW1pbHk9ImNhaXJvLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjZmZmZmZmIj5BPC90ZXh0Pjwvc3ZnPg==';
 
@@ -509,9 +714,9 @@
                 ],
                 adminCode: '70062',
                 tempPoints: [
-                    'سكين 1', 'سكين 2', 'سكين 3', 'سكين 4', 
-                    'سكين 5', 'سكين 6', 'سكين 7', 'مبرد', 
-                    'غرفة التدفئة', 'صالة الذبح'
+                    'KS1', 'KS2', 'KS3', 'KS4', 
+                    'KS5',   'Chiller', 
+                    'H.room', 'Hall'
                 ],
                 cleaningPoints: [
                     'صالة الذبح والأرضيات', 'طاولة التقطيع والسكاكين', 
@@ -537,6 +742,58 @@
 
         let state = {};
 
+        // 🔥 دالة لتحميل البيانات من Firebase
+        async function loadFromFirebase() {
+            try {
+                // تحميل الإعدادات
+                const configDoc = await db.collection('appConfig').doc('settings').get();
+                if (configDoc.exists) {
+                    state.config = { ...DEFAULT_STATE.config, ...configDoc.data() };
+                }
+
+                // تحميل التقارير
+                const reportsSnapshot = await db.collection('reports').get();
+                reportsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const reportType = data.reportType;
+                    const key = data.key || doc.id;
+                    if (state.reports[reportType]) {
+                        state.reports[reportType][key] = data;
+                    }
+                });
+
+                showMessage("تم تحميل البيانات من السحابة بنجاح", "success");
+            } catch (error) {
+                console.error("Error loading from Firebase:", error);
+                // إذا فشل التحميل من Firebase، استخدم البيانات المحلية
+                loadFromStorage();
+            }
+        }
+
+        // 🔥 دالة لحفظ البيانات إلى Firebase
+        async function saveToFirebase() {
+            try {
+                // حفظ الإعدادات
+                await db.collection('appConfig').doc('settings').set(state.config, { merge: true });
+
+                // حفظ التقارير
+                for (const reportType in state.reports) {
+                    for (const key in state.reports[reportType]) {
+                        const reportData = {
+                            ...state.reports[reportType][key],
+                            reportType: reportType,
+                            key: key,
+                            lastUpdated: new Date().toISOString()
+                        };
+                        await db.collection('reports').doc(key).set(reportData, { merge: true });
+                    }
+                }
+            } catch (error) {
+                console.error("Error saving to Firebase:", error);
+                showMessage("فشل في حفظ البيانات إلى السحابة", "error");
+            }
+        }
+
         function loadFromStorage() {
             try {
                 const storedState = localStorage.getItem(STATE_KEY);
@@ -557,9 +814,13 @@
             }
         }
 
-        function saveToStorage() {
+        async function saveToStorage() {
             try {
                 localStorage.setItem(STATE_KEY, JSON.stringify(state));
+                // حفظ إلى Firebase أيضًا
+                if (state.isLoggedIn) {
+                    await saveToFirebase();
+                }
             } catch (e) {
                 console.error("Error saving state to localStorage:", e);
                 showMessage("فشل حفظ البيانات محليًا. الذاكرة ممتلئة أو غير متاحة.", 'error');
@@ -629,43 +890,58 @@
             }
         }
 
-        function handleLogin(abattoirCode) {
+        // 🔥 دالة الدخول المعدلة لاستخدام Firebase
+        async function handleLogin(abattoirCode) {
             dom.loginButton.disabled = true;
             dom.loginLoading.classList.remove('hidden');
             dom.loginMessage.classList.add('hidden');
 
-            if (abattoirCode === state.config.adminCode) {
-                state.isLoggedIn = true;
-                state.isAdmin = true;
-                state.currentAbattoir = null;
-
-                dom.loginScreen.classList.add('hidden');
-                dom.mainLayout.classList.remove('hidden');
-                dom.settingsLink.classList.remove('hidden');
-                dom.sidebarImageDisplay.src = state.config.unifiedImageUrl;
-                updateHeaderAbattoirInfo();
+            try {
+                // البحث في Firestore عن الرمز
+                const doc = await db.collection('accessCodes').doc(abattoirCode).get();
                 
-                renderScreen('dashboard');
-                showMessage('تم تسجيل الدخول كمدير نظام.', 'success');
-            } else {
-                const abattoir = state.config.abattoirs.find(a => a.id === abattoirCode);
-                if (abattoir) {
-                    state.isLoggedIn = true;
-                    state.isAdmin = false;
-                    state.currentAbattoir = abattoir;
-
-                    dom.loginScreen.classList.add('hidden');
-                    dom.mainLayout.classList.remove('hidden');
-                    dom.settingsLink.classList.add('hidden');
-                    dom.sidebarImageDisplay.src = state.config.unifiedImageUrl;
-                    updateHeaderAbattoirInfo();
+                if (doc.exists) {
+                    // تسجيل الدخول كمستخدم مجهول في Firebase
+                    await auth.signInAnonymously();
                     
-                    renderScreen('dashboard');
-                    showMessage(`تم تسجيل الدخول إلى ${abattoir.name} بنجاح.`, 'success');
+                    if (abattoirCode === '70062') {
+                        state.isLoggedIn = true;
+                        state.isAdmin = true;
+                        state.currentAbattoir = null;
+                        
+                        dom.loginScreen.classList.add('hidden');
+                        dom.mainLayout.classList.remove('hidden');
+                        dom.settingsLink.classList.remove('hidden');
+                        dom.sidebarImageDisplay.src = state.config.unifiedImageUrl;
+                        updateHeaderAbattoirInfo();
+                        
+                        renderScreen('dashboard');
+                        showMessage('تم تسجيل الدخول بنجاح كمدير نظام.', 'success');
+                    } else {
+                        state.isLoggedIn = true;
+                        state.isAdmin = false;
+                        state.currentAbattoir = { id: abattoirCode, name: `مسلخ ${abattoirCode}` };
+
+                        dom.loginScreen.classList.add('hidden');
+                        dom.mainLayout.classList.remove('hidden');
+                        dom.settingsLink.classList.add('hidden');
+                        dom.sidebarImageDisplay.src = state.config.unifiedImageUrl;
+                        updateHeaderAbattoirInfo();
+                        
+                        renderScreen('dashboard');
+                        showMessage(`تم تسجيل الدخول إلى مسلخ ${abattoirCode} بنجاح.`, 'success');
+                    }
+                    
+                    // تحميل البيانات من Firebase بعد تسجيل الدخول
+                    await loadFromFirebase();
                 } else {
                     dom.loginMessage.textContent = 'رمز المسلخ غير صحيح.';
                     dom.loginMessage.classList.remove('hidden');
                 }
+            } catch (error) {
+                console.error("Login error:", error);
+                dom.loginMessage.textContent = 'حدث خطأ في النظام. حاول مرة أخرى.';
+                dom.loginMessage.classList.remove('hidden');
             }
 
             dom.loginButton.disabled = false;
@@ -715,7 +991,7 @@
             }
         }
 
-        function setupAppAndLoad() {
+        async function setupAppAndLoad() {
             loadFromStorage();
             dom.splashImageDisplay.src = state.config.splashImageUrl;
             dom.sidebarImageDisplay.src = state.config.unifiedImageUrl;
@@ -768,59 +1044,78 @@
         }
 
         function exportPdf(title, elementId, reportType) {
-            const reportContent = document.getElementById(elementId);
-            if (!reportContent) {
-                showMessage('لم يتم العثور على محتوى التقرير.', 'error');
-                return;
-            }
-
             const printContainer = document.createElement('div');
             printContainer.id = 'print-container';
             printContainer.style.display = 'none';
 
-            const headerHtml = `
-                <div class="print-header">
-                    <h1>${title}</h1>
-                    <p>المسلخ: ${state.currentAbattoir?.name || state.config.abattoirs[0]?.name || 'N/A'}</p>
-                    <p>التاريخ: ${new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-            `;
-
-            const contentClone = reportContent.cloneNode(true);
+            const currentDate = new Date();
+            const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+                              "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
             
-            contentClone.querySelectorAll('.app-button, .approve-day-button, .new-lab-input, #addLabReport, .delete-lab-button, .edit-lab-button, .delete-day-button, .table-input, .cleaning-score-select-table, .flexible-input, #cleaning-month-filter, #temp-month-filter, #maint-month-filter, #lab-date-filter, #lab-date-start, #lab-date-end').forEach(el => {
-                el.remove();
-            });
-
-            contentClone.querySelectorAll('table tr').forEach(row => {
-                const cells = row.querySelectorAll('td, th');
-                if (cells.length > 0) {
-                    const lastCell = cells[cells.length - 1];
-                    if (lastCell.textContent.includes('اعتماد') || lastCell.textContent.includes('حذف') || lastCell.textContent.includes('تعديل')) {
-                        lastCell.remove();
-                    }
-                }
-            });
-
+            let headerHtml = '';
+            
             switch(reportType) {
                 case 'cleaning':
-                    processCleaningReportForPrint(contentClone);
+                    headerHtml = `
+                        <div class="print-header" style="font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: bold;">
+                            <div class="cleaning-report-title">تقرير النظافة</div>
+                            <div style="clear: both; overflow: hidden; margin-top: 10px;">
+                                <div class="cleaning-report-abattoir">مسلخ: ${state.currentAbattoir?.name || state.config.abattoirs[0]?.name || 'N/A'}</div>
+                                <div class="cleaning-report-date">${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</div>
+                            </div>
+                        </div>
+                    `;
                     break;
                 case 'temperature':
-                    processTemperatureReportForPrint(contentClone);
-                    break;
-                case 'maintenance':
-                    processMaintenanceReportForPrint(contentClone);
+                    headerHtml = `
+                        <div class="print-header" style="font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: bold;">
+                            <div class="temperature-report-title">تقرير الحرارة</div>
+                            <div style="clear: both; overflow: hidden; margin-top: 10px;">
+                                <div class="temperature-report-abattoir">مسلخ: ${state.currentAbattoir?.name || state.config.abattoirs[0]?.name || 'N/A'}</div>
+                                <div class="temperature-report-date">${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</div>
+                            </div>
+                        </div>
+                    `;
                     break;
                 case 'laboratory':
-                    processLaboratoryReportForPrint(contentClone);
+                    headerHtml = `
+                        <div class="print-header" style="font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: bold;">
+                            <div class="lab-report-title">تقرير الفحوصات المخبرية</div>
+                            <div style="clear: both; overflow: hidden; margin-top: 10px;">
+                                <div class="lab-report-abattoir">مسلخ: ${state.currentAbattoir?.name || state.config.abattoirs[0]?.name || 'N/A'}</div>
+                                <div class="lab-report-date">${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                default:
+                    headerHtml = `
+                        <div class="print-header">
+                            <h1>${title}</h1>
+                            <h2>مسلخ: ${state.currentAbattoir?.name || state.config.abattoirs[0]?.name || 'N/A'}</h2>
+                            <h3>${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</h3>
+                        </div>
+                    `;
+            }
+
+            let contentHtml = '';
+            
+            switch(reportType) {
+                case 'cleaning':
+                    contentHtml = generateCleaningReportForPrint();
+                    break;
+                case 'temperature':
+                    contentHtml = generateTemperatureReportForPrint();
+                    break;
+                case 'maintenance':
+                    contentHtml = generateMaintenanceReportForPrint();
+                    break;
+                case 'laboratory':
+                    contentHtml = generateLaboratoryReportForPrint();
                     break;
             }
 
-            removeEmptyRows(contentClone);
-
-            printContainer.innerHTML = headerHtml;
-            printContainer.appendChild(contentClone);
+            printContainer.innerHTML = headerHtml + contentHtml;
 
             document.body.appendChild(printContainer);
             printContainer.style.display = 'block';
@@ -832,99 +1127,379 @@
             }, 500);
         }
 
-        function processCleaningReportForPrint(contentClone) {
-            contentClone.querySelectorAll('select.cleaning-score-select-table').forEach(select => {
-                const value = select.value;
-                const span = document.createElement('span');
-                span.textContent = value || '--';
-                span.style.fontWeight = 'bold';
-                span.style.display = 'block';
-                span.style.minWidth = '50px';
-                span.style.padding = '5px';
-                span.style.textAlign = 'center';
-                
-                if (value) {
-                    span.className = getCleaningColorClass(value);
-                }
-                
-                select.parentNode.replaceChild(span, select);
-            });
+        function generateCleaningReportForPrint() {
+            const abattoirId = state.currentAbattoir?.id || 'admin';
+            const today = new Date();
+            const currentMonth = today.getMonth() + 1;
+            const currentYear = today.getFullYear();
+            const lastDay = getDaysInMonth(currentYear, currentMonth);
+            const cleaningPoints = state.config.cleaningPoints;
 
-            contentClone.querySelectorAll('input, textarea').forEach(input => {
-                const span = document.createElement('span');
-                span.textContent = input.value || input.textContent || '';
-                span.style.fontWeight = 'bold';
-                span.style.display = 'block';
-                span.style.minWidth = '50px';
-                input.parentNode.replaceChild(span, input);
-            });
-        }
-
-        function processTemperatureReportForPrint(contentClone) {
-            contentClone.querySelectorAll('input.temperature-input').forEach(input => {
-                const span = document.createElement('span');
-                span.textContent = input.value || '--';
-                span.style.fontWeight = 'bold';
-                span.style.display = 'block';
-                span.style.minWidth = '50px';
-                input.parentNode.replaceChild(span, input);
-            });
-        }
-
-        function processMaintenanceReportForPrint(contentClone) {
-            contentClone.querySelectorAll('textarea.flexible-input').forEach(textarea => {
-                const span = document.createElement('span');
-                span.textContent = textarea.value || '--';
-                span.style.fontWeight = 'bold';
-                span.style.display = 'block';
-                span.style.minWidth = '50px';
-                span.style.whiteSpace = 'pre-wrap';
-                textarea.parentNode.replaceChild(span, textarea);
-            });
-        }
-
-        function processLaboratoryReportForPrint(contentClone) {
-            contentClone.querySelectorAll('input, select, textarea').forEach(input => {
-                const span = document.createElement('span');
-                span.textContent = input.value || input.textContent || '--';
-                span.style.fontWeight = 'bold';
-                span.style.display = 'block';
-                span.style.minWidth = '50px';
-                input.parentNode.replaceChild(span, input);
-            });
-
-            const statsContainer = contentClone.querySelector('#lab-statistics');
-            if (statsContainer) {
-                statsContainer.classList.add('print-stats');
+            if (cleaningPoints.length === 0) {
+                return '<p class="text-center text-gray-500 p-6">لم يتم تعريف نقاط تقييم النظافة بعد.</p>';
             }
+
+            let tableHeader = `
+                <table class="min-w-full border-collapse border border-gray-400 text-right text-xs">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 border border-gray-400 bg-gray-200 text-sm font-semibold w-24">التاريخ</th>
+                            ${cleaningPoints.map(point => 
+                                `<th class="p-2 border border-gray-400 bg-gray-300 text-sm font-semibold table-cell-header">${point}</th>`
+                            ).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let tableRows = '';
+            for (let day = 1; day <= lastDay; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const displayDate = String(day).padStart(2, '0');
+                const docId = `${dateStr}_${abattoirId}`;
+                const report = state.reports.cleaning_reports[docId];
+                
+                tableRows += `
+                    <tr>
+                        <td class="p-1 border border-gray-400 font-bold bg-gray-50 text-center">${displayDate}</td>
+                        ${cleaningPoints.map(point => {
+                            const value = report?.points?.[point] || '--';
+                            return `
+                                <td class="p-1 border border-gray-400 ${getCleaningColorClass(value)} text-center font-bold">
+                                    ${value}
+                                </td>
+                            `;
+                        }).join('')}
+                    </tr>
+                `;
+            }
+
+            const legendHtml = `
+                <div class="cleaning-legend-print">
+                    <div class="legend-item-print">
+                        <div class="legend-color-print color-0-5"></div>
+                        <span>0.5 ضعيف</span>
+                    </div>
+                    <div class="legend-item-print">
+                        <div class="legend-color-print color-1"></div>
+                        <span>1 وسط</span>
+                    </div>
+                    <div class="legend-item-print">
+                        <div class="legend-color-print color-1-5"></div>
+                        <span>1.5 جيد</span>
+                    </div>
+                    <div class="legend-item-print">
+                        <div class="legend-color-print color-2"></div>
+                        <span>2 جيد جدا</span>
+                    </div>
+                    <div class="legend-item-print">
+                        <div class="legend-color-print color-2-5"></div>
+                        <span>2.5 ممتاز</span>
+                    </div>
+                </div>
+            `;
+
+            return tableHeader + tableRows + '</tbody></table>' + legendHtml;
         }
 
-        function removeEmptyRows(contentClone) {
-            contentClone.querySelectorAll('table tbody tr').forEach(row => {
-                let hasData = false;
-                const cells = row.querySelectorAll('td');
+        function generateTemperatureReportForPrint() {
+            const abattoirId = state.currentAbattoir?.id || 'admin';
+            const today = new Date();
+            const currentMonth = today.getMonth() + 1;
+            const currentYear = today.getFullYear();
+            const lastDay = getDaysInMonth(currentYear, currentMonth);
+            const tempPoints = state.config.tempPoints;
+            const periods = [
+                { id: '7am', label: '7 صباحاً' },
+                { id: '11am', label: '11 صباحاً' },
+                { id: '2pm', label: '2 ظهراً' },
+                { id: '5pm', label: '5 مساءً' }
+            ];
+
+            if (tempPoints.length === 0) {
+                return '<p class="text-center text-gray-500 p-6">لم يتم تعريف نقاط قياس درجات الحرارة بعد.</p>';
+            }
+
+            let tableHeader = `
+                <table class="min-w-full border-collapse border border-gray-400 text-right text-xs">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th rowspan="2" class="p-2 border border-gray-400 bg-gray-200 text-sm font-semibold w-24">التاريخ</th>
+                            ${periods.map(p => `<th colspan="${tempPoints.length}" class="p-2 border border-gray-400 bg-gray-300 text-sm font-semibold temperature-period-header">${p.label}</th>`).join('')}
+                        </tr>
+                        <tr>
+                            ${periods.map(p => tempPoints.map(point => 
+                                `<th class="p-1 border border-gray-400 rotate-header">${point}</th>`
+                            ).join('')).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let tableRows = '';
+            for (let day = 1; day <= lastDay; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const displayDate = String(day).padStart(2, '0');
                 
-                cells.forEach(cell => {
-                    const content = cell.textContent.trim();
-                    if (content && content !== '--' && content !== 'N/A') {
-                        hasData = true;
-                    }
-                });
+                tableRows += `
+                    <tr>
+                        <td class="p-1 border border-gray-400 font-bold bg-gray-50 text-center">${displayDate}</td>
+                        ${periods.map(p => tempPoints.map(point => {
+                            const docId = `${dateStr}_${p.id}_${point}_${abattoirId}`;
+                            const data = state.reports.temperature_reports[docId];
+                            const value = data?.value || '--';
+                            return `
+                                <td class="p-1 border border-gray-400 text-center font-bold">
+                                    ${value}
+                                </td>
+                            `;
+                        }).join('')).join('')}
+                    </tr>
+                `;
+            }
+
+            return tableHeader + tableRows + '</tbody></table>';
+        }
+
+        function generateMaintenanceReportForPrint() {
+            const abattoirId = state.currentAbattoir?.id || 'admin';
+            const today = new Date();
+            const currentMonth = today.getMonth() + 1;
+            const currentYear = today.getFullYear();
+            const lastDay = getDaysInMonth(currentYear, currentMonth);
+            const maintenancePoints = state.config.maintenancePoints;
+
+            if (maintenancePoints.length === 0) {
+                return '<p class="text-center text-gray-500 p-6">لم يتم تعريف نقاط الصيانة بعد.</p>';
+            }
+
+            let tableHeader = `
+                <table class="min-w-full border-collapse border border-gray-400 text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 border border-gray-400 bg-gray-200 text-sm font-semibold w-24">التاريخ</th>
+                            ${maintenancePoints.map(point => 
+                                `<th class="p-2 border border-gray-400 bg-gray-300 text-sm font-semibold maintenance-point-header">${point}</th>`
+                            ).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let tableRows = '';
+            for (let day = 1; day <= lastDay; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const displayDate = String(day).padStart(2, '0');
                 
-                if (!hasData) {
-                    row.classList.add('empty-row');
-                }
+                tableRows += `
+                    <tr>
+                        <td class="p-1 border border-gray-400 font-bold bg-gray-50 text-center">${displayDate}</td>
+                        ${maintenancePoints.map(point => {
+                            const docId = `${dateStr}_${point}_${abattoirId}`;
+                            const data = state.reports.maintenance_reports[docId];
+                            const value = data?.value || '--';
+                            return `
+                                <td class="p-1 border border-gray-400 text-center font-bold flexible-cell">
+                                    ${value}
+                                </td>
+                            `;
+                        }).join('')}
+                    </tr>
+                `;
+            }
+
+            return tableHeader + tableRows + '</tbody></table>';
+        }
+
+        function generateLaboratoryReportForPrint() {
+            const abattoirId = state.currentAbattoir?.id || 'admin';
+            const today = new Date().toISOString().substring(0, 10);
+            const startDate = document.getElementById('lab-date-start')?.value || today;
+            const endDate = document.getElementById('lab-date-end')?.value || today;
+
+            const abattoirReports = Object.values(state.reports.laboratory_reports).filter(r => {
+                const reportDate = r.date;
+                return reportDate >= startDate && reportDate <= endDate && r.abattoirId === abattoirId;
             });
+            
+            abattoirReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            let tableHtml = `
+                <table class="min-w-full border-collapse border border-gray-400 text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 border border-gray-400 w-16">م</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">اسم المتعامل</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">رقم التلفون</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">نوع الحيوان</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">جنس الحيوان</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">الاشتباه</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">الاختبار</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">النتيجة</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">الحكم</th>
+                            <th class="p-2 border border-gray-400 table-cell-header">التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (abattoirReports.length === 0) {
+                tableHtml += `
+                    <tr>
+                        <td colspan="10" class="p-4 border border-gray-400 text-center text-gray-500">
+                            لا توجد فحوصات مسجلة لهذا التاريخ
+                        </td>
+                    </tr>
+                `;
+            } else {
+                abattoirReports.forEach((report, index) => {
+                    tableHtml += `
+                        <tr>
+                            <td class="p-1 border border-gray-400 w-16 text-center">${index + 1}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.owner || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.phone || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.animalType || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.animalGender || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.suspicion || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.test || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.result || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.data.judgment || 'N/A'}</td>
+                            <td class="p-1 border border-gray-400 flexible-cell">${report.date || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            tableHtml += '</tbody></table>';
+
+            // Generate statistics tables
+            const statsTables = generateLabStatisticsTables(abattoirReports);
+
+            return tableHtml + statsTables;
+        }
+
+        function generateLabStatisticsTables(reports) {
+            const totalSamples = reports.length;
+            
+            // إحصائيات نوع الحيوان
+            const animalTypeStats = {};
+            state.config.labAnimalTypes.forEach(type => {
+                animalTypeStats[type] = reports.filter(r => r.data.animalType === type).length;
+            });
+            
+            // إحصائيات نوع الاختبار
+            const testStats = {};
+            state.config.labTests.forEach(test => {
+                testStats[test] = reports.filter(r => r.data.test === test).length;
+            });
+            
+            // إحصائيات النتيجة
+            const resultStats = {};
+            state.config.labResults.forEach(result => {
+                resultStats[result] = reports.filter(r => r.data.result === result).length;
+            });
+
+            let animalTypeTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">نوع الحيوان</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>نوع الحيوان</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(animalTypeStats).forEach(([type, count]) => {
+                animalTypeTable += `
+                    <tr>
+                        <td>${type}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            animalTypeTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            let testTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">نوع الاختبار</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>نوع الاختبار</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(testStats).forEach(([test, count]) => {
+                testTable += `
+                    <tr>
+                        <td>${test}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            testTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            let resultTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">النتيجة</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>النتيجة</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(resultStats).forEach(([result, count]) => {
+                resultTable += `
+                    <tr>
+                        <td>${result}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            resultTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return `
+                <div class="stats-tables-container">
+                    ${animalTypeTable}
+                    ${testTable}
+                    ${resultTable}
+                </div>
+            `;
         }
         
         function renderDashboard() {
             const screen = document.getElementById('dashboard-screen');
-            const abattoirName = state.isAdmin ? 'مدير النظام' : (state.currentAbattoir?.name || 'مسلخ');
+            const abattoirName = state.isAdmin ? ' ' : (state.currentAbattoir?.name || 'مسلخ');
             
             screen.innerHTML = `
-                <h2 class="text-3xl font-bold text-gray-800 mb-6"></h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">لوحة التحكم</h2>
                 <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
-                    <h3 class="text-xl font-semibold mb-4 text-emerald-600">  ${abattoirName}</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-emerald-600"> ${abattoirName}</h3>
                     <p class="text-gray-600 mb-4"></p>
                     ${state.isAdmin ? 
                         '<p class="text-blue-600 font-semibold"></p>' : 
@@ -1044,7 +1619,7 @@
                     <tr data-date="${dateStr}" class="hover:bg-yellow-50">
                         <td class="p-1 border border-gray-400 font-bold bg-gray-50 text-center">${displayDate}</td>
                         ${cleaningPoints.map(point => `
-                            <td class="p-0 border border-gray-400 w-20 h-10">
+                            <td class="p-0 border border-gray-400 w-24 h-10">
                                 <select data-date="${dateStr}" data-point="${point}" class="cleaning-score-select-table text-sm">
                                     <option value="" class="bg-gray-100">--</option>
                                     ${scores.map(score => 
@@ -1296,7 +1871,7 @@
                     <tr data-date="${dateStr}" class="hover:bg-yellow-50">
                         <td class="p-1 border border-gray-400 font-bold bg-gray-50 text-center">${displayDate}</td>
                         ${periods.map(p => tempPoints.map(point => `
-                            <td class="p-0 border border-gray-400 w-10 h-10">
+                            <td class="p-0 border border-gray-400 w-14 h-10">
                                 <input type="number" data-date="${dateStr}" data-period="${p.id}" data-point="${point}" max="99" class="table-input temperature-input text-sm" placeholder="--">
                             </td>
                         `).join('') ).join('')}
@@ -1512,7 +2087,7 @@
                     <tr>
                         <th class="p-2 border border-gray-400 bg-gray-200 text-sm font-semibold w-24">التاريخ</th>
                         ${maintenancePoints.map(point => 
-                            `<th class="p-2 border border-gray-400 bg-gray-300 text-sm font-semibold table-cell-header">${point}</th>`
+                            `<th class="p-2 border border-gray-400 bg-gray-300 text-sm font-semibold maintenance-point-header">${point}</th>`
                         ).join('')}
                         <th class="p-2 border border-gray-400 bg-gray-200 text-sm font-semibold w-24">اعتماد اليوم</th>
                     </tr>
@@ -1780,10 +2355,8 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div id="lab-statistics" class="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-center">إحصائيات الفحوصات المخبرية</h3>
-                        <div id="lab-stats-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        </div>
+                    <div id="lab-statistics" class="mt-2 p-2 bg-gray-50 rounded">
+                        <div id="lab-stats-content"></div>
                     </div>
                 </div>
             `;
@@ -1862,60 +2435,113 @@
             const statsContainer = document.getElementById('lab-stats-content');
             if (!statsContainer) return;
 
-            const totalSamples = reports.length;
-            
+            // إحصائيات نوع الحيوان
             const animalTypeStats = {};
             state.config.labAnimalTypes.forEach(type => {
                 animalTypeStats[type] = reports.filter(r => r.data.animalType === type).length;
             });
             
+            // إحصائيات نوع الاختبار
             const testStats = {};
             state.config.labTests.forEach(test => {
                 testStats[test] = reports.filter(r => r.data.test === test).length;
             });
             
+            // إحصائيات النتيجة
             const resultStats = {};
             state.config.labResults.forEach(result => {
                 resultStats[result] = reports.filter(r => r.data.result === result).length;
             });
-            
-            const judgmentStats = {};
-            state.config.labJudgments.forEach(judgment => {
-                judgmentStats[judgment] = reports.filter(r => r.data.judgment === judgment).length;
-            });
 
-            const positiveSamples = reports.filter(r => r.data.result === 'ايجابية').length;
-            const negativeSamples = reports.filter(r => r.data.result === 'سلبية').length;
-            const suspiciousSamples = reports.filter(r => r.data.result === 'مشكوك فيها').length;
+            let animalTypeTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">نوع الحيوان</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>نوع الحيوان</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(animalTypeStats).forEach(([type, count]) => {
+                animalTypeTable += `
+                    <tr>
+                        <td>${type}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            animalTypeTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            let testTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">نوع الاختبار</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>نوع الاختبار</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(testStats).forEach(([test, count]) => {
+                testTable += `
+                    <tr>
+                        <td>${test}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            testTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            let resultTable = `
+                <div style="flex: 1;">
+                    <div class="stats-table-title">النتيجة</div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>النتيجة</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(resultStats).forEach(([result, count]) => {
+                resultTable += `
+                    <tr>
+                        <td>${result}</td>
+                        <td>${count}</td>
+                    </tr>
+                `;
+            });
+            
+            resultTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
 
             statsContainer.innerHTML = `
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h4 class="font-semibold text-lg mb-2 text-center">إجمالي العينات</h4>
-                    <p class="text-3xl font-bold text-center text-blue-600">${totalSamples}</p>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h4 class="font-semibold text-lg mb-2 text-center">النتائج</h4>
-                    <div class="space-y-1">
-                        <div class="flex justify-between"><span>إيجابية:</span> <span class="font-bold text-red-600">${positiveSamples}</span></div>
-                        <div class="flex justify-between"><span>سلبية:</span> <span class="font-bold text-green-600">${negativeSamples}</span></div>
-                        <div class="flex justify-between"><span>مشكوك فيها:</span> <span class="font-bold text-yellow-600">${suspiciousSamples}</span></div>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h4 class="font-semibold text-lg mb-2 text-center">أنواع الحيوانات</h4>
-                    <div class="space-y-1">
-                        ${Object.entries(animalTypeStats).map(([type, count]) => `
-                            <div class="flex justify-between"><span>${type}:</span> <span class="font-bold">${count}</span></div>
-                        `).join('')}
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h4 class="font-semibold text-lg mb-2 text-center">الاختبارات</h4>
-                    <div class="space-y-1">
-                        ${Object.entries(testStats).map(([test, count]) => `
-                            <div class="flex justify-between"><span>${test}:</span> <span class="font-bold">${count}</span></div>
-                        `).join('')}
-                    </div>
+                <div class="stats-tables-container">
+                    ${animalTypeTable}
+                    ${testTable}
+                    ${resultTable}
                 </div>
             `;
         }
@@ -2068,6 +2694,86 @@
             }
         }
 
+        // 🔥 دوال الإدارة للمدير (إضافة رموز جديدة)
+        async function addNewAccessCode(newCode) {
+            if (!state.isAdmin) {
+                showMessage("لا تملك صلاحية إضافة رموز جديدة", "error");
+                return;
+            }
+
+            try {
+                await db.collection('accessCodes').doc(newCode).set({
+                    isActive: true,
+                    createdAt: new Date().toISOString(),
+                    createdBy: '70062'
+                });
+                showMessage(`تم إضافة الرمز ${newCode} بنجاح`, "success");
+            } catch (error) {
+                console.error("Error adding access code:", error);
+                showMessage("فشل في إضافة الرمز", "error");
+            }
+        }
+
+        async function deleteAccessCode(code) {
+            if (!state.isAdmin) {
+                showMessage("لا تملك صلاحية حذف الرموز", "error");
+                return;
+            }
+
+            try {
+                await db.collection('accessCodes').doc(code).delete();
+                showMessage(`تم حذف الرمز ${code} بنجاح`, "success");
+            } catch (error) {
+                console.error("Error deleting access code:", error);
+                showMessage("فشل في حذف الرمز", "error");
+            }
+        }
+
+        // 🔥 دالة لتحميل قائمة الرموز من Firebase
+        async function loadAccessCodesList() {
+            try {
+                const snapshot = await db.collection('accessCodes').get();
+                const codesList = document.getElementById('access-codes-list');
+                
+                if (snapshot.empty) {
+                    codesList.innerHTML = '<p class="text-gray-500 text-center">لا توجد رموز مسجلة</p>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <div class="flex justify-between items-center p-2 border-b last:border-b-0">
+                            <span class="font-semibold">${doc.id} 
+                                <span class="text-sm text-green-600">(${data.isActive ? 'نشط' : 'غير نشط'})</span>
+                            </span>
+                            ${doc.id !== '70062' ? `
+                                <button data-code="${doc.id}" class="delete-access-code text-red-500 hover:text-red-700">حذف</button>
+                            ` : '<span class="text-gray-400">مدير النظام</span>'}
+                        </div>
+                    `;
+                });
+                
+                codesList.innerHTML = html;
+
+                // إضافة event listeners لأزرار الحذف
+                codesList.querySelectorAll('.delete-access-code').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const codeToDelete = e.target.dataset.code;
+                        if (confirm(`هل أنت متأكد من حذف الرمز ${codeToDelete}؟`)) {
+                            await deleteAccessCode(codeToDelete);
+                            loadAccessCodesList();
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error loading access codes:", error);
+                document.getElementById('access-codes-list').innerHTML = '<p class="text-red-500 text-center">فشل في تحميل الرموز</p>';
+            }
+        }
+
         function renderSettingsScreen() {
             const screen = document.getElementById('settings-screen');
             if (!state.isAdmin) {
@@ -2099,6 +2805,18 @@
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">شاشة الإعدادات (مدير النظام)</h2>
                 <div class="space-y-4">
                     
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">إدارة رموز الدخول</h3>
+                        <div class="flex space-x-4 space-x-reverse mb-4">
+                            <input type="text" id="new-access-code-input" placeholder="أدخل الرمز الجديد" class="p-3 border rounded-lg flex-grow">
+                            <button id="addAccessCode" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">إضافة رمز</button>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">قائمة الرموز النشطة:</h4>
+                        <div id="access-codes-list" class="space-y-2 border p-3 rounded-lg bg-gray-50">
+                            <p class="text-gray-500 text-center">جاري تحميل الرموز...</p>
+                        </div>
+                    </div>
+
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h3 class="text-xl font-semibold mb-4">إضافة موقع المسلخ</h3>
                         <div class="flex space-x-4 space-x-reverse mb-4">
@@ -2224,13 +2942,26 @@
                                     `).join('')}
                                 </div>
                                 <div class="flex space-x-2 space-x-reverse mt-2">
-                                    <input type="text" id="new-judgment-input" placeholder="حكم جديد</button>
+                                    <input type="text" id="new-judgment-input" placeholder="حكم جديد" class="p-2 border rounded-lg flex-grow">
+                                    <button id="addJudgment" class="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700">إضافة</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
+
+            // تحميل قائمة الرموز من Firebase
+            loadAccessCodesList();
+
+            document.getElementById('addAccessCode').addEventListener('click', async () => {
+                const newCode = document.getElementById('new-access-code-input').value.trim();
+                if (newCode) {
+                    await addNewAccessCode(newCode);
+                    document.getElementById('new-access-code-input').value = '';
+                    loadAccessCodesList();
+                }
+            });
 
             document.getElementById('addAbattoir').addEventListener('click', addAbattoirHandler);
             screen.querySelectorAll('.delete-abattoir').forEach(btn => btn.addEventListener('click', deleteAbattoirHandler));
